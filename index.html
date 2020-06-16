@@ -50,15 +50,32 @@
 	      min-height: 3.5em;
 	    }
 
-		.tableFixHead          { overflow: scroll; height: 100px; }
+		.metric_results          { overflow: scroll; height: 100px; }
 		::-webkit-scrollbar {
 		    width: 0px;
 		    background: transparent; /* make scrollbar transparent */
 		}
 
+		.metric_results          { overflow: auto; height: 100px; }
+		.metric_results thead th { position: sticky; top: 0; }
+
+		/* Just common table stuff. Really. */
+		table  { border: 0; border-collapse: collapse; width: 100%; }
+		th, td { padding: 8px 16px; }
+		th     { background:#eee; }
+		.table .thead-dark th { background-color: #3E0224; border-color: #fff; }
+
 		.card {border: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);border-radius: 5px;}
 		.card:hover {border: 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.24);transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);border-radius: 5px;}
 		.navbar {background-color: #3E0224; border: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);border-radius: 5px;}
+
+		#myDIV {
+		  width: 100%;
+		  padding: 50px 0;
+		  text-align: center;
+		  background-color: lightblue;
+		  margin-top: 20px;
+		}
 	</style>
 </head>
 <body>		
@@ -98,9 +115,6 @@
 						<span class="sr-only">Toggle Menu</span>
 					</button>
               		<a class="navbar-brand" style="padding-left: 15px; color: rgba(0, 0, 0, 0.9);">Noir Exchange Funding</a>
-					<button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<i class="fa fa-bars"></i>
-					</button>
 					<div class="collapse navbar-collapse" id="navbarSupportedContent">
 						<ul class="nav navbar-nav ml-auto">
 							<li class="nav-item active">
@@ -123,11 +137,15 @@
 					</div>
 				</div>
 			</nav>
-			<div class="card">
+			<div class="card" style="margin-bottom: 40px">
                 <div class="card-body">
                   <h2>Dear Community</h2>
                   <p>Please help us raise 1.25 BTC  to get Noir listed on a Top 75 Exchange!</p>
-				  <p>You can donate to the following BTC address: <a target="_blank" href="https://chainz.cryptoid.info/btc/address.dws?1AbmreqhmRgwjttXAv3Cc6XfuruHrwfe65.htm">1AbmreqhmRgwjttXAv3Cc6XfuruHrwfe65</a></p>
+				  <p>You can donate to the following BTC address: <a target="_blank" href="https://chainz.cryptoid.info/btc/address.dws?1AbmreqhmRgwjttXAv3Cc6XfuruHrwfe65.htm">1AbmreqhmRgwjttXAv3Cc6XfuruHrwfe65</a>    <button style="padding: 0" class="btn btn-primary" onclick="myFunction()">QR code</button></p>
+				  <div id="myDIV" style="display: none;">
+				  	<img src="./img/address.png"><br>
+				  	<b style="color: black;">1AbmreqhmRgwjttXAv3Cc6XfuruHrwfe65</b>
+				  </div>
 				  <p>All donations to that address will go toward listing Noir on a new exchange. Our goal is to raise a total of 1.25 BTC so we can get Noir listed on a Top 75 Exchange (the exact exchange will be determined afterwards).</p>
 				  <p>Even if the goal of 1.25 BTC is not achieved in the end, all funds on that address will go toward listing Noir on exchanges.</p>
 				  <div class="progress" style="height: 35px">
@@ -135,7 +153,7 @@
 					</div>
 				  </div>
 				  <br>
-				  <div id="metric_results"></div>
+				  <div id="metric_results" style="overflow: scroll;"></div>
                 </div>
             </div>
         </div>
@@ -154,18 +172,22 @@
 				console.log(data.data.txs[0]);
 				var myTableDiv = document.getElementById("metric_results")
 			    var table = document.createElement('TABLE')
+			    var tableHead = document.createElement('THEAD')
 			    var tableBody = document.createElement('TBODY')
-			    table.border = '1'
+			    table.setAttribute("class", "table")
+			    tableHead.setAttribute("class", "thead-dark")
 			    table.style.width = '100%'
+			    table.appendChild(tableHead);
 			    table.appendChild(tableBody);
 
 			    var heading = new Array();
 			    heading[0] = "TXID"
-			    heading[1] = "Amount"
+			    heading[1] = "Time"
+			    heading[2] = "Amount"
 
 			    //TABLE COLUMNS
 			    var tr = document.createElement('TR');
-			    tableBody.appendChild(tr);
+			    tableHead.appendChild(tr);
 			    for (i = 0; i < heading.length; i++) {
 			        var th = document.createElement('TH')
 			        th.appendChild(document.createTextNode(heading[i]));
@@ -178,6 +200,20 @@
 			        var td1 = document.createElement('TD')
 			        td1.appendChild(document.createTextNode(data.data.txs[i].txid));
 			        tr.appendChild(td1)
+			        var td2 = document.createElement('TD')
+			        let unix_timestamp = data.data.txs[i].time
+			        var a = new Date(unix_timestamp * 1000);
+  					var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  					var year = a.getFullYear();
+  					var month = months[a.getMonth()];
+					var date = a.getDate();
+					var hour = a.getHours();
+					var min = a.getMinutes();
+					var sec = a.getSeconds();
+					var formattedTime = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min;
+					console.log(formattedTime);
+			        td2.appendChild(document.createTextNode(formattedTime));
+			        tr.appendChild(td2)
 			        var td3 = document.createElement('TD')
 			        td3.appendChild(document.createTextNode(data.data.txs[i].value + " BTC"));
 			        tr.appendChild(td3)
@@ -187,6 +223,16 @@
 						});
 					});
     </script>
+    <script>
+	function myFunction() {
+	  var x = document.getElementById("myDIV");
+	  if (x.style.display === "none") {
+	    x.style.display = "block";
+	  } else {
+	    x.style.display = "none";
+	  }
+	}
+	</script>
   </body>
 </html>
 
