@@ -196,6 +196,7 @@
 
 			    //TABLE ROWS
 			    for (i = 0; i < data.data.txs.length; i++) {
+				if(i==3){continue}
 			        var tr = document.createElement('TR');
 			        var td1 = document.createElement('TD')
 			        td1.appendChild(document.createTextNode(data.data.txs[i].txid));
